@@ -59,3 +59,6 @@ You might be wondering why the script scrapes the App Store instead of just usin
 Website:                   |  Api:
 :-------------------------:|:-------------------------:
 ![Bildschirmfoto 2023-09-11 um 19 06 40](https://github.com/binnichtaktiv/AppStore-Update-Notifier/assets/96953964/5b205a32-591f-4701-a468-ba5ab209ff89)  |  ![Bildschirmfoto 2023-09-11 um 19 06 20](https://github.com/binnichtaktiv/AppStore-Update-Notifier/assets/96953964/81e84276-a307-4f59-a394-086064407ef2)
+
+
+With the way this script works, you can get results 3 hours earlier than with Apples API
