@@ -56,9 +56,12 @@ You might be wondering why the script scrapes the App Store instead of just usin
 1. **Speed**: Scraping proves to be several hours faster than fetching data through the API. This ensures that you get the notifications in almost real-time.
 2. **Timely Updates**: For reasons best known to Apple, updates reflected via their API often lag behind. Scraping ensures that you get notified of updates the moment they hit the App Store.
 
+
 Website:                   |  Api:
 :-------------------------:|:-------------------------:
-![Bildschirmfoto 2023-09-11 um 19 06 40](https://github.com/binnichtaktiv/AppStore-Update-Notifier/assets/96953964/5b205a32-591f-4701-a468-ba5ab209ff89)  |  ![Bildschirmfoto 2023-09-11 um 19 06 20](https://github.com/binnichtaktiv/AppStore-Update-Notifier/assets/96953964/81e84276-a307-4f59-a394-086064407ef2)
+<img src="https://github.com/binnichtaktiv/AppStore-Update-Notifier/assets/96953964/d54ad84b-5ab9-4a2f-99fd-76887bbc33e5" alt="Bildschirmfoto 2023-09-12 um 10 05 21" width="400"/>  |  <img src="https://github.com/binnichtaktiv/AppStore-Update-Notifier/assets/96953964/c09d67b6-c2a1-4bea-9267-04b04292ff39" alt="Bildschirmfoto 2023-09-12 um 10 06 19" width="400"/>
 
 
-With the way this script works, you can get results 3 hours earlier than with Apples API
+
+
+With the way this script works, you can get results a few hours earlier than with Apples API
