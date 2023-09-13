@@ -65,3 +65,6 @@ Website:                   |  Api:
 
 
 With the way this script works, you can get results a few hours earlier than with Apples API
+
+
+credits to [zxcvbn](https://github.com/asdfzxcvbn) for the idea and the first version (that uses the API)
