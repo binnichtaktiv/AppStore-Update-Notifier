@@ -9,6 +9,24 @@ import telebot
 
 BOT_TOKEN = 'YOUR_BOT_TOKEN'
 CHAT_ID = 'YOUR_CHAT_ID'
+
+def update_config():
+    global BOT_TOKEN, CHAT_ID
+    if BOT_TOKEN == 'YOUR_BOT_TOKEN':
+        BOT_TOKEN = input("Please enter your Bot Token: ")
+    if CHAT_ID == 'YOUR_CHAT_ID':
+        CHAT_ID = input("Please enter your Chat ID: ")
+
+    with open(__file__, 'r') as file:
+        script = file.read()
+    script = script.replace('BOT_TOKEN = \'YOUR_BOT_TOKEN\'', f'BOT_TOKEN = \'{BOT_TOKEN}\'')
+    script = script.replace('CHAT_ID = \'YOUR_CHAT_ID\'', f'CHAT_ID = \'{CHAT_ID}\'')
+    with open(__file__, 'w') as file:
+        file.write(script)
+        
+if BOT_TOKEN == 'YOUR_BOT_TOKEN' or CHAT_ID == 'YOUR_CHAT_ID':
+    update_config()
+
 bot = telebot.TeleBot(BOT_TOKEN)
 
 def get_version_from_webpage(url):
