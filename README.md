@@ -32,8 +32,10 @@ A Python script designed to track updates for specific iOS apps on the App Store
 ```pip3 install requests bs4 pyTelegramBotAPI```
 
 ### 3. Telegram Bot Setup
-- Set up a new Telegram bot by speaking to the [BotFather](https://t.me/botfather). After creating the bot, you'll receive a token. Replace the `BOT_TOKEN` value in the script with this token.
-- To get your chat ID, send `/id` to [Rose](https://t.me/MissRose_bot) on Telegram. Copy your Chat ID and replace the `CHAT_ID` value in the script with this ID.
+- Set up a new Telegram bot by speaking to the [BotFather](https://t.me/botfather). After creating the bot, you'll receive a token.
+- To get your chat ID, send `/id` to [Rose](https://t.me/MissRose_bot) on Telegram.
+
+  Enter the bot token and chat ID the first time you run the program
 
 ---
 
