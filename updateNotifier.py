@@ -1,126 +1,163 @@
-import re
+import requests
+from bs4 import BeautifulSoup
+import json
 import os
 import sys
 import time
-import json
-import urllib
-import telebot
-import requests
-from uuid import uuid4
 from datetime import datetime, timedelta
+import telebot
 
-BOT_TOKEN = 'abc'
-CHAT_ID = 'abc'
-REQUEST_CHAT_ID = 'abc'
-API_ID = 123
-API_HASH = 'abc'
+BOT_TOKEN = 'YOUR_BOT_TOKEN'
+CHAT_ID = 'YOUR_CHAT_ID'
+
+def update_config():
+    global BOT_TOKEN, CHAT_ID
+    if BOT_TOKEN == 'YOUR_BOT_TOKEN':
+        BOT_TOKEN = input("Please enter your Bot Token: ")
+    if CHAT_ID == 'YOUR_CHAT_ID':
+        CHAT_ID = input("Please enter your Chat ID: ")
+
+    with open(__file__, 'r') as file:
+        script = file.read()
+    script = script.replace('BOT_TOKEN = \'YOUR_BOT_TOKEN\'', f'BOT_TOKEN = \'{BOT_TOKEN}\'')
+    script = script.replace('CHAT_ID = \'YOUR_CHAT_ID\'', f'CHAT_ID = \'{CHAT_ID}\'')
+    with open(__file__, 'w') as file:
+        file.write(script)
+        
+if BOT_TOKEN == 'YOUR_BOT_TOKEN' or CHAT_ID == 'YOUR_CHAT_ID':
+    update_config()
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
-def check():
-    with open("updateNotifier-Applist.json", "r") as appsJson:
-        appList = json.load(appsJson)
+def get_version_from_webpage(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
+    }
+    response = requests.get(url, headers=headers)
 
-        for app in appList:
-            try:
-                appName = app["name"]
-                listAppVersion = app["version"]
-                appLink = app["link"]
-                country = app.get("country", "us")
-                
-                print(f"[*] checking {appName} - current version {listAppVersion}")
-                
-                if None in (appLink, appName):
-                    print(f"[!] Invalid entry for {appName}")
-                    continue
+    if response.status_code != 200:
+        print("Problem fetching the website.")
+        return None
 
-                appLink, apiAppVersion, appName = getApp(appLink, country)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    version_elem = soup.select('p.whats-new__latest__version')
 
-                if listAppVersion != apiAppVersion:
-                    print(f"[$] new version available! {listAppVersion} -> {apiAppVersion}")
-                    msg = f"update available for {appName}\n\nold version: {listAppVersion}\nnew version: {apiAppVersion}\n\n{appLink}"
-                    try:
-                        bot.send_message(CHAT_ID, msg)
-                    except Exception as e:
-                        print(f"[!] failed to send message to Telegram: {e}")
+    if version_elem:
+        version_text = version_elem[0].text.strip()
+        version = version_text.split("Version ")[1].split(" ")[0]
+        return version
+    return None
 
-                    app["version"] = apiAppVersion
+def get_name_from_webpage(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
+    }
+    response = requests.get(url, headers=headers)
 
-                    with open("updateNotifier-Applist.json", "w") as appsJson:
-                        json.dump(appList, appsJson, indent=4)
+    if response.status_code != 200:
+        print("Problem fetching the website.")
+        return None
 
-            except Exception as e:
-                print(f"[!] Error checking {app.get('name','unknown app')}: {str(e)}")
-                continue
+    soup = BeautifulSoup(response.content, 'html.parser')
+    h1_elem = soup.select_one('.product-header__title.app-header__title')
 
-def getApp(appLink, country):
+    if not h1_elem:
+        return None
 
-    appID = re.search(r"/id(\d{9,10})", appLink).group(1)
+    span_elem = h1_elem.find('span')
+    if span_elem:
+        span_elem.extract()
 
+    app_name = h1_elem.text.strip()
+    return app_name
+
+def send_telegram_message(app_name, old_version, new_version, app_link):
+    msg = f"Update available for {app_name}!\n\nOld version: {old_version}\nnew version: {new_version}\n\n{app_link}"
     try:
-        with(urllib.request.urlopen(f"https://itunes.apple.com/lookup?id={appID}&country={country}&limit=1&noCache={uuid4()}")) as req:
-            resp = json.load(req)
-
-            if resp["resultCount"] == 0:
-                bot.send_message(CHAT_ID, f"app seems to be offline!\n{appLink}")
-                raise ValueError("app seems to be offline")  
-            
-            else:
-                appName = resp["results"][0]["trackName"]
-                apiAppVersion = resp["results"][0]["version"]
-                appLink = "https://apps.apple.com/app/id" + appID
-                #appLink = resp["results"][0]["trackViewUrl"]
-                return appLink, apiAppVersion, appName
-        
+        bot.send_message(CHAT_ID, msg)
     except Exception as e:
-        print("erorr: ", e)
+        print(f"Failed to send message to Telegram: {e}")
+
+def initialize_json_file():
+    if not os.path.exists("appstore_notifier_applist_DONT_DELETE.json"):
+        with open("appstore_notifier_applist_DONT_DELETE.json", "w") as file:
+            json.dump([], file)
+
+def check_apps_for_updates():
+    initialize_json_file()
+
+    with open("appstore_notifier_applist_DONT_DELETE.json", "r") as file:
+        apps = json.load(file)
+
+    for app in apps:
+        app_name = app['name']
+        app_link = app['link']
+        old_version = app['version']
+        print(f"Checking {app_name} (current version: {old_version})...")
+        new_version = get_version_from_webpage(app_link)
+
+        if new_version:
+            print(f"Latest version of {app_name}: {new_version}")
+            if old_version != new_version:
+                print("New version available! Sending message to Telegram channel.")
+                send_telegram_message(app_name, old_version, new_version, app_link)
+                app['version'] = new_version
+
+    with open("appstore_notifier_applist_DONT_DELETE.json", "w") as file:
+        json.dump(apps, file)
+
+def add_app_to_checklist(app_link):
+    app_name = get_name_from_webpage(app_link)
+    if not app_name:
+        print(f"Failed to fetch app name from the link: {app_link}")
+        return
+
+    if "https://apps.apple.com/" in app_link:
+        parts = app_link.split('/')
+        if len(parts) > 4 and parts[3] != "us":
+            parts[3] = "us"
+            app_link = '/'.join(parts)
+
+    new_version = get_version_from_webpage(app_link)
+    if new_version:
+        apps = []
+        initialize_json_file()
+
+        with open("appstore_notifier_applist_DONT_DELETE.json", "r") as file:
+            apps = json.load(file)
+        
+        # Check if the app is already in the list
+        for app in apps:
+            if app_name == app["name"]:
+                print(f"{app_name} is already in the list with version {app['version']}.")
+                return
+        
+        apps.append({"name": app_name, "link": app_link, "version": new_version})
+
+        with open("appstore_notifier_applist_DONT_DELETE.json", "w") as file:
+            json.dump(apps, file)  # Save updated list
+        
+        print(f"Successfully added {app_name} with version {new_version} to the watchlist.")
+    else:
+        print(f"Failed to add {app_name}. Could not fetch its version.")
 
 if len(sys.argv) < 2:
-    print("usage: python3 script.py [add/check] [AppStore Link]")
+    print("Usage: python3 script.py [add/check] [App-Link]")
     sys.exit(1)
 
 action = sys.argv[1]
 
-if sys.argv[1] == "check":
+if action == "check":
     while True:
-        check()
-        nextCheck = datetime.now() + timedelta(minutes=60)
-        print(f"[-] next update check in 60 minutes at {nextCheck.strftime('%H:%M:%S')}")
-        time.sleep(1*60*60)
-
-elif sys.argv[1] == "add":
+        check_apps_for_updates()
+        next_check_time = datetime.now() + timedelta(minutes=20)
+        print(f"Checking again in 20 minutes at {next_check_time.strftime('%H:%M:%S')}")
+        time.sleep(1200)  # checks every 20 minutes
+elif action == "add":
     if len(sys.argv) != 3:
         print("Usage: python3 script.py add <App-Link>")
-    appLink = sys.argv[2]
-    appLink, apiAppVersion, appName = getApp(appLink)
-    if apiAppVersion:
-        if not os.path.exists("updateNotifier-Applist.json"):
-            data = [{
-                "name": appName,
-                "version": apiAppVersion,
-                "link": appLink
-            }]
-            with open("updateNotifier-Applist.json", "w") as appsJson:
-                    json.dump(data, appsJson, indent=4)
-            sys.exit()
-            
-        with open("updateNotifier-Applist.json", "r") as appsJson:
-            appList = json.load(appsJson)
-
-            for app in appList:
-                if appName == app["name"]:
-                    print(f"[!]{appName} is already in the list with version {app['version']}")
-                    sys.exit()
-        
-            appList.append(
-                {
-                "name": appName,
-                "version": apiAppVersion,
-                "link": appLink
-                }
-            )
-            with open("updateNotifier-Applist.json", "w") as appsJson:
-                json.dump(appList, appsJson, indent=4)  # Save updated list
-            print(f"[*] successfully added {appName} with version {apiAppVersion} to watchlist.")
-    else:
-        print(f"[!] failed to add {appName}")
+        sys.exit(1)
+    app_link = sys.argv[2]
+    add_app_to_checklist(app_link)
+else:
+    print("Invalid action. Usage: python3 script.py [add/check] [App-Link]")
