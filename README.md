@@ -1,72 +1,66 @@
-# 📱 AppStore-Update-Notifier
+# App Update Notifier
 
-A Python script designed to track updates for specific iOS apps on the App Store and notify you via Telegram whenever a new version is available.
+## Overview
 
----
+A Python script that monitors App Store applications for version updates and sends notifications via Telegram.
 
-## **Features:**
-- 🕵️‍♂️ **Automated App Store scraping**: No need for manual checks, let the script do the work.
-- 📬 **Telegram Notifications**: Receive instant notifications directly on your Telegram account.
-- 📌 **Extendability**: Can easily be extended to track multiple apps.
-- 🌍 **Universal OS Support**: The script has been designed to run on any operating system, including Windows.
+## Features
 
+- Track multiple iOS apps for version updates
+- Automatically check for updates every hour
+- Send update notifications to a Telegram chat
+- Simple command-line interface for adding and checking apps
 
----
+## Prerequisites
 
-## **Prerequisites:**
-1. **Python 3.x**: Ensure Python is properly installed.
-2. **Telegram bot token**: Required for sending Telegram notifications.
-3. **Telegram chat ID**: So the script knows where to send the notifications.
+Make sure you have the following installed:
+- Python 3.7+
+- pip (Python package manager)
 
----
+## Required Libraries
 
-## **Installation:**
+Install the necessary libraries using pip:
 
-### 1. Clone the Repository
-```git clone https://github.com/binnichtaktiv/AppStore-Update-Notifier```
+```bash
+pip install pyTelegramBotAPI requests
+```
 
+## Configuration
 
-```cd AppStoreUpdateNotifier```
+1. Create a Telegram Bot:
+   - Talk to BotFather on Telegram to create a new bot
+   - Obtain your bot token
 
-### 2. Install the requirements
-```pip3 install requests bs4 pyTelegramBotAPI```
+2. Get your Telegram Chat ID:
+   - Use @userinfobot on Telegram or use Swiftgram app to find your Chat ID
 
-### 3. Telegram Bot Setup
-- Set up a new Telegram bot by speaking to the [BotFather](https://t.me/botfather). After creating the bot, you'll receive a token.
-- To get your chat ID, send `/id` to [Rose](https://t.me/MissRose_bot) on Telegram.
+3. Update the script with your credentials:
+   - Replace `BOT_TOKEN` with your Telegram bot token
+   - Replace `CHAT_ID` with your Telegram chat ID
 
-  Enter the bot token and chat ID the first time you run the program
+## Usage
 
----
+### Add an App to Watchlist
 
-## **Usage:**
+```bash
+python3 updateNotifier.py add https://apps.apple.com/app/your-app-link
+```
 
-### 1. To Add an App for Tracking
-```python3 updateNotifier.py add [App-Link]```
+### Start Monitoring
 
+```bash
+python3 updateNotifier.py check
+```
 
-Replace `[App-Link]` with the link to the iOS app on the App Store.
+## How It Works
 
-### 2. To Check for Updates
-```python3 updateNotifier.py check```
+1. The script maintains a JSON file (`updateNotifier-Applist.json`) with tracked apps
+2. Checks app versions every 60 minutes
+3. Sends a Telegram message when a new version is detected
+4. Automatically updates the local version in the watchlist
 
+## Notes
 
-This command will initiate the checking process. You'll be notified on Telegram if any tracked app has a new version available. The script checks every 20 minutes.
-
-## **Why Scrape Instead of Using API?**:
-You might be wondering why the script scrapes the App Store instead of just using Apple's official API. The answer is quite simple:
-1. **Speed**: Scraping proves to be several hours faster than fetching data through the API. This ensures that you get the notifications in almost real-time.
-2. **Timely Updates**: For reasons best known to Apple, updates reflected via their API often lag behind. Scraping ensures that you get notified of updates the moment they hit the App Store.
-
-
-Website:                   |  Api:
-:-------------------------:|:-------------------------:
-<img src="https://github.com/binnichtaktiv/AppStore-Update-Notifier/assets/96953964/d54ad84b-5ab9-4a2f-99fd-76887bbc33e5" alt="Bildschirmfoto 2023-09-12 um 10 05 21" width="400"/>  |  <img src="https://github.com/binnichtaktiv/AppStore-Update-Notifier/assets/96953964/c09d67b6-c2a1-4bea-9267-04b04292ff39" alt="Bildschirmfoto 2023-09-12 um 10 06 19" width="400"/>
-
-
-
-
-With the way this script works, you can get results a few hours earlier than with Apples API
-
-
-credits to [zxcvbn](https://github.com/asdfzxcvbn) for the idea and the first version (that uses the API)
+- Ensure stable internet connection
+- The script runs continuously when in check mode
+- Compatible with macOS, Linux, and Windows
